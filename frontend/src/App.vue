@@ -65,7 +65,7 @@ export default {
 
     async signup() {
       try {
-        await axios.post("http://localhost:3000/auth/signup", this.authData);
+        await axios.post(`${process.env.VUE_APP_BACKEND_URL}/auth/signup`, this.authData);
         alert("Signup successful! Please log in.");
         this.authMode = "login";
       } catch (error) {
@@ -76,7 +76,7 @@ export default {
 
     async login() {
       try {
-        const response = await axios.post("http://localhost:3000/auth/login", this.authData);
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/auth/login`, this.authData);
         localStorage.setItem("token", response.data.token);
         this.isAuthenticated = true;
         this.initializeMapWithDelay();
@@ -150,7 +150,7 @@ export default {
       formData.append("file", file);
 
       try {
-        const response = await axios.post("http://localhost:3000/upload", formData, {
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/upload`, formData, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
 
@@ -257,7 +257,7 @@ export default {
       const to = coordinates[coordinates.length - 1];
 
       try {
-        const response = await axios.post("http://localhost:3000/map/distance", {
+        const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/map/distance`, {
           coordinates: [
             { lat: from[1], lng: from[0] },
             { lat: to[1], lng: to[0] },
