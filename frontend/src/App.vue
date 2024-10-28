@@ -1,14 +1,20 @@
 <template>
   <div id="app">
     <!-- User Management -->
-    <div v-if="!isAuthenticated" class="auth">
-      <h2>{{ authMode === 'login' ? 'Login' : 'Sign Up' }}</h2>
-      <form @submit.prevent="authMode === 'login' ? login() : signup()">
-        <input v-model="authData.username" placeholder="Username" required />
-        <input v-model="authData.password" type="password" placeholder="Password" required />
-        <button type="submit">{{ authMode === 'login' ? 'Login' : 'Sign Up' }}</button>
-      </form>
-      <button @click="toggleAuthMode">{{ authMode === 'login' ? 'Switch to Sign Up' : 'Switch to Login' }}</button>
+    <div v-if="!isAuthenticated" class="auth-container">
+      <div class="auth">
+        <h2>{{ authMode === 'login' ? 'Login' : 'Sign Up' }}</h2>
+        <form @submit.prevent="authMode === 'login' ? login() : signup()">
+          <input v-model="authData.username" placeholder="Username" required />
+          <input v-model="authData.password" type="password" placeholder="Password" required />
+          <button type="submit" class="submit-btn">
+            {{ authMode === 'login' ? 'Login' : 'Sign Up' }}
+          </button>
+        </form>
+        <button @click="toggleAuthMode" class="switch-mode-btn">
+          {{ authMode === 'login' ? 'Switch to Sign Up' : 'Switch to Login' }}
+        </button>
+      </div>
     </div>
 
     <!-- Map and Controls -->
@@ -76,6 +82,8 @@ export default {
 
     async login() {
       try {
+        console.log('process.env.VUE_APP_BACKEND_URL', process.env)
+        console.log('process.env.VUE_APP_BACKEND_URL', process.env.VUE_APP_BACKEND_URL)
         const response = await axios.post(`${process.env.VUE_APP_BACKEND_URL}/auth/login`, this.authData);
         localStorage.setItem("token", response.data.token);
         this.isAuthenticated = true;
@@ -197,6 +205,12 @@ export default {
       const marker = new mapboxgl.Marker({ draggable: true })
         .setLngLat(e.lngLat)
         .addTo(this.map);
+
+      this.lineCoordinates.push([e.lngLat.lng, e.lngLat.lat]);
+
+      if (this.lineCoordinates.length > 1) {
+        await this.calculateSegmentDistance();
+      }
 
       // Store the marker in an array with its coordinates
       this.markers.push({
@@ -334,11 +348,97 @@ export default {
 </script>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Centered Auth Container */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f9f9f9;
+}
+
+/* Auth Form Styling */
+.auth {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.auth h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Input Fields */
+.auth input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.auth input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Switch Mode Button */
+.switch-mode-btn {
+  margin-top: 15px;
+  background: none;
+  border: none;
+  color: #007bff;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.switch-mode-btn:hover {
+  color: #0056b3;
+}
+
+/* Map Container */
 .map-container {
   height: 100vh;
   width: 100%;
 }
 
+/* Controls */
 .controls {
   position: absolute;
   top: 10px;
@@ -349,15 +449,25 @@ export default {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
+.controls button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.controls button:hover {
+  background-color: #218838;
+}
+
 .distance-info {
   margin-top: 10px;
   font-weight: bold;
-}
-
-.auth {
-  display: flex;
-  flex-direction: column;
-  max-width: 300px;
-  margin: auto;
 }
 </style>
